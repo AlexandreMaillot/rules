@@ -1,33 +1,33 @@
 ---
-description: APPLY Clean Code principles WHENEVER writing code
+description: APPLIQUER les principes du Clean Code LORS de l’écriture de code
 alwaysApply: true
 ---
 
-Code Quality:
-- Write no comments
-- Use strict types only
-- Disallow untyped values
-- Use explicit constants, never magic numbers
-- Avoid double negatives
-- Use long, readable variable names
-- Write the simplest code possible
-- Eliminate duplication (DRY)
+Qualité du code :
+- Ne pas écrire de commentaires
+- Utiliser uniquement des types stricts
+- Interdire les valeurs non typées
+- Utiliser des constantes explicites, jamais de nombres magiques
+- Éviter les doubles négations
+- Employer des noms de variables longs et explicites
+- Écrire le code le plus simple possible
+- Éliminer toute duplication (DRY)
 
-Length Limits:
-- Max 30 lines per function
-- Max 5 params per function
-- Max 300 lines per file
-- Max 10 sub-files per folder
+Limites de longueur :
+- Maximum 30 lignes par fonction
+- Maximum 5 paramètres par fonction
+- Maximum 300 lignes par fichier
+- Maximum 10 sous-fichiers par dossier
 
-Responsibilities:
-- One responsibility per file
+Responsabilités :
+- Une seule responsabilité par fichier
 
-Functions:
-- No flag parameters
+Fonctions :
+- Aucun paramètre pour activer/désactiver un comportement (flag)
 
-Errors:
+Erreurs :
 - Fail fast
-- Throw errors early
-- Use custom domain errors
-- Translate errors to user language
-- Log errors in EN with error codes
+- Lever les erreurs tôt
+- Utiliser des erreurs métier personnalisées
+- Traduire les erreurs pour l’utilisateur
+- Journaliser les erreurs en anglais avec des codes d’erreur

@@ -1,0 +1,38 @@
+---
+description: APPLIQUER cette structure de dossiers LORS de la création d'une nouvelle page Flutter
+globs: apps/*/lib/pages/**
+alwaysApply: false
+---
+
+Structure obligatoire:
+- Placer les pages dans le dossier `pages/` (avec un "s")
+- Créer un dossier par page avec la structure définie
+- Organiser en `bloc/` et `views/`
+
+Dossier bloc:
+- Créer un sous-dossier `{nom_page}_bloc/`
+- Contient `{nom}_page_bloc.dart`, `{nom}_page_event.dart`, `{nom}_page_state.dart`
+
+Dossier views:
+- Contient `{nom}_page.dart` et `{nom}_view.dart`
+- Le fichier page expose les méthodes statiques
+- Le fichier view contient le Scaffold et l'UI
+
+Exemple de structure:
+```
+pages/
+  liste_itineraires/
+    bloc/
+      liste_itineraires_page_bloc/
+        liste_itineraires_page_bloc.dart
+        liste_itineraires_page_event.dart
+        liste_itineraires_page_state.dart
+    views/
+      liste_itineraires_page.dart
+      liste_itineraires_view.dart
+```
+
+Nommage:
+- Utiliser le pluriel pour le dossier si pertinent
+- Préfixer les fichiers bloc avec le nom complet
+- Suffixer avec `_page` et `_view` selon le type

@@ -1,15 +1,14 @@
 ---
 description: Apply general testing standards for clarity and consistency when writing any test. Covers organization, naming, and core principles like AAA.
-globs: apps/**/*.spec.*, apps/**/*.test.*
+globs: apps/**/*.spec.*,apps/**/*.test.*,apps/**/*_test.*
 alwaysApply: false
 ---
-
 Organization:
 - Organize test files by feature.
 - Group related tests using `describe`.
 
 Core Principles:
-- Write tests in English.
+- Write tests in French.
 - Follow Arrange-Act-Assert (AAA) pattern.
 - Prefer action-based user interaction tests.
 - Use descriptive test names.

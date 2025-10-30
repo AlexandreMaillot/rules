@@ -1,9 +1,10 @@
 ---
-description: APPLY feature based architecture WHEN organizing code in frontend
-globs: apps/frontend/**
+description: APPLIQUER l’architecture basée sur les fonctionnalités LORS de l’organisation du code frontend
+globs: apps/**/*_view.dart,apps/**/*_page.dart
 alwaysApply: false
 ---
 
-- Use smart/dumb component pattern
-- Smart components handle data and logic
-- Dumb components display only, use interfaces
+- Utiliser le pattern composant intelligent/composant présentatif
+- Les composants intelligents gèrent la donnée et la logique
+- Les composants présentatifs affichent uniquement, en utilisant des interfaces
+- Utilisé le BLoC Pattern

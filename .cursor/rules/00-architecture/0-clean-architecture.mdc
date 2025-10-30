@@ -1,34 +1,33 @@
 ---
-description: APPLY Clean Architecture principles WHEN organizing code in backend
-globs: apps/backend/**, src/**/*.php
+description: APPLIQUER les principes de la Clean Architecture LORS de l’organisation du code backend
+globs: apps/*_api/**
 alwaysApply: false
 ---
+Structure des couches :
+- Séparer le code par couche : Domaine, Application, Infrastructure, Présentation
+- Les dépendances doivent toujours aller vers l’intérieur uniquement
+- Le domaine doit être sans dépendance au framework
+- Définir des interfaces à chaque limite de couche
 
-Layer Structure:
-- Separate code by layer: Domain, Application, Infrastructure, Presentation
-- Direct dependencies inward only
-- Keep domain layer framework-agnostic
-- Define interfaces at layer boundaries
+Couche Domaine :
+- Placer ici la logique métier et les entités
+- Utiliser des modèles purs et sans framework
+- Définir des services de domaine pour la logique complexe
+- Déclarer uniquement les interfaces de dépôt (repository)
 
-Domain Layer:
-- Place business logic and entities here
-- Use pure, framework-free models
-- Define domain services for complex logic
-- Declare repository interfaces only
+Couche Application :
+- Implémenter les cas d’usage comme orchestrateurs
+- Services strictement à responsabilité unique
+- Utiliser des DTO pour tout transfert de données
+- Valider les entrées aux frontières
 
-Application Layer:
-- Implement use cases as orchestrators
-- Keep services single-responsibility
-- Use DTOs for all data transfer
-- Validate input at boundaries
+Couche Infrastructure :
+- Implémenter les interfaces de dépôt du domaine
+- Isoler tous les systèmes externes (BDD, APIs, fichiers)
+- Ne jamais faire entrer l’infrastructure dans la logique métier
 
-Infrastructure Layer:
-- Implement domain repository interfaces
-- Isolate external systems (DB, APIs, files)
-- Keep infrastructure out of business logic
-
-Presentation Layer:
-- Handle API requests and responses
-- Use controllers for HTTP logic
-- Centralize error handling and validation
-- Format all responses consistently
+Couche Présentation :
+- Gérer les requêtes et réponses API
+- Utiliser des contrôleurs pour la logique HTTP
+- Centraliser la gestion des erreurs et la validation
+- Formater toutes les réponses de manière cohérente
