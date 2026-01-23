@@ -1,0 +1,233 @@
+---
+description: Navigation imbriquée pour desktop avec NavigationRail persistante
+globs: apps/*/lib/**/*_bureau*.dart, apps/*/lib/widgets/*navigation*.dart
+alwaysApply: false
+---
+
+Principe:
+
+- Sur desktop, la NavigationRail doit rester visible lors des push vers des pages de détail
+- Seule la zone centrale change, pas l'ensemble de l'écran
+- Le clic sur la NavigationRail doit toujours ramener à la liste correspondante
+
+Architecture obligatoire:
+
+1. BureauNavigationShell - Shell principal desktop:
+
+```dart
+final bureauContentAreaKey = GlobalKey<_BureauContentAreaState>();
+
+class BureauNavigationShell extends StatelessWidget {
+  const BureauNavigationShell({
+    required this.child,
+    super.key,
+  });
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Row(
+        children: [
+          const NavigationRailGlobale(),
+          Expanded(
+            child: BureauContentArea(
+              key: bureauContentAreaKey,
+              baseContent: child,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class BureauContentArea extends StatefulWidget {
+  const BureauContentArea({
+    required this.baseContent,
+    super.key,
+  });
+
+  final Widget baseContent;
+
+  @override
+  State<BureauContentArea> createState() => _BureauContentAreaState();
+}
+
+class _BureauContentAreaState extends State<BureauContentArea> {
+  final List<Widget> _overlayPages = [];
+
+  void push(Widget page) {
+    setState(() {
+      _overlayPages.add(page);
+    });
+  }
+
+  bool pop() {
+    if (_overlayPages.isEmpty) {
+      return false;
+    }
+    setState(() {
+      _overlayPages.removeLast();
+    });
+    return true;
+  }
+
+  void clearOverlays() {
+    if (_overlayPages.isNotEmpty) {
+      setState(() {
+        _overlayPages.clear();
+      });
+    }
+  }
+
+  bool get canPop => _overlayPages.isNotEmpty;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_overlayPages.isEmpty) {
+      return widget.baseContent;
+    }
+    return _overlayPages.last;
+  }
+}
+```
+
+2. BureauNavigator - Utilitaire de navigation platform-aware:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:mon_app/extensions/extensions.dart';
+import 'package:mon_app/widgets/bureau_navigation_shell.dart';
+
+class BureauNavigator {
+  static void push(BuildContext context, Widget page) {
+    if (context.isDesktop) {
+      bureauContentAreaKey.currentState?.push(page);
+    } else {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(builder: (_) => page),
+      );
+    }
+  }
+
+  static void pop(BuildContext context) {
+    if (context.isDesktop) {
+      final popped = bureauContentAreaKey.currentState?.pop() ?? false;
+      if (!popped) {
+        Navigator.of(context).pop();
+      }
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
+}
+```
+
+3. Intégration dans NavigationRail - Effacer les overlays au changement d'onglet:
+
+```dart
+void _onDestinationSelected(BuildContext context, int index) {
+  bureauContentAreaKey.currentState?.clearOverlays();
+  context.read<AppNavigationBloc>().add(
+    AppNavigationOngletSelectionne(index),
+  );
+}
+```
+
+4. Utilisation dans AppNavigationView:
+
+```dart
+@override
+Widget build(BuildContext context) {
+  return BlocBuilder<AppNavigationBloc, AppNavigationState>(
+    builder: (context, state) {
+      final content = IndexedStack(
+        index: state.indexOngletSelectionne,
+        children: pages,
+      );
+
+      if (context.isDesktop) {
+        return BureauNavigationShell(child: content);
+      }
+
+      return content; // Mobile: chaque page gère son propre Scaffold
+    },
+  );
+}
+```
+
+Utilisation dans les vues bureau:
+```dart
+// ✅ Correct - Push vers une page de détail
+onTap: () {
+  BureauNavigator.push(
+    context,
+    DetailAffairePage(affaire: affaire),
+  );
+}
+
+// ✅ Correct - Retour depuis une page de détail
+onPressed: () => BureauNavigator.pop(context)
+
+// ✅ Correct - BackButton dans AppBar
+leading: BackButton(
+  onPressed: () => BureauNavigator.pop(context),
+  color: MabokColors.blanc,
+),
+```
+
+Exemples interdits:
+```dart
+// ❌ Incorrect - Navigator.of(context) contourne le système
+onTap: () {
+  Navigator.of(context).push(DetailAffairePage.route(affaire: affaire));
+}
+
+// ❌ Incorrect - Passer une Route au lieu d'un Widget
+BureauNavigator.push(context, DetailAffairePage.route(affaire: affaire));
+
+// ❌ Incorrect - Navigator.of(context).pop dans une vue bureau
+onPressed: () => Navigator.of(context).pop();
+```
+
+Comportement attendu:
+
+- Navigation par onglets (NavigationRail) : Change l'IndexedStack, efface les overlays
+- Push vers détail : Ajoute à la pile overlay, NavigationRail reste visible
+- Pop depuis détail : Retire de la pile overlay, retour à la liste
+- Clic NavigationRail depuis détail : Efface overlays + change onglet
+
+Structure des fichiers:
+```
+lib/
+├── widgets/
+│   ├── bureau_navigation_shell.dart  // BureauNavigationShell + BureauContentArea
+│   └── navigation_rail_globale.dart  // NavigationRail avec clearOverlays
+├── utils/
+│   └── bureau_navigator.dart         // BureauNavigator.push/pop
+└── pages/
+    └── app_navigation/
+        └── views/
+            └── app_navigation_page.dart  // Utilise BureauNavigationShell si desktop
+```
+
+Points clés:
+
+- GlobalKey pour accéder à l'état du BureauContentArea
+- API Widget (pas Route) pour BureauNavigator.push
+- clearOverlays() appelé dans _onDestinationSelected de NavigationRail
+- Les vues mobile conservent leur propre Scaffold avec BottomNavigationBar
+- Les vues bureau n'ont PAS de NavigationRail intégrée (géré par BureauNavigationShell)
+- Chaque vue bureau pushée doit avoir son propre BackButton utilisant BureauNavigator.pop
+
+Extension MediaQuery requise:
+```dart
+extension MediaQueryX on BuildContext {
+  bool get isDesktop => MediaQuery.of(this).size.width > 1200;
+  bool get isTablet => MediaQuery.of(this).size.width > 600 && 
+                       MediaQuery.of(this).size.width <= 1200;
+  bool get isMobile => MediaQuery.of(this).size.width <= 600;
+}
+```
